@@ -3,7 +3,14 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_win_rates_from_csv(csv_path, name_A, name_B, save_dir, log_scale=True):
+def moving_average(data, window_size=500):
+    """Compute rolling average with padding so curve starts at episode 0."""
+    ma = np.convolve(data, np.ones(window_size)/window_size, mode='valid')
+    # Pad start with first value so we keep same length as input
+    pad = np.full(window_size-1, ma[0])
+    return np.concatenate([pad, ma])
+
+def plot_win_rates_from_csv(csv_path, name_A, name_B, save_dir, smooth=True):
     episodes, winners = [], []
     with open(csv_path, 'r') as f:
         reader = csv.DictReader(f)
@@ -30,13 +37,12 @@ def plot_win_rates_from_csv(csv_path, name_A, name_B, save_dir, log_scale=True):
         draw_rate.append(counts["draw"] / i)
 
     # --- Logarithmic sampling ---
-    if log_scale:
+    window_size = 500
+    if smooth:
         # Choose points at 1,2,4,8,16... episodes
-        log_indices = np.unique(np.logspace(0, np.log10(len(episodes)), num=200, dtype=int))
-        episodes = [episodes[i-1] for i in log_indices if i-1 < len(episodes)]
-        A_win_rate = [A_win_rate[i-1] for i in log_indices if i-1 < len(A_win_rate)]
-        B_win_rate = [B_win_rate[i-1] for i in log_indices if i-1 < len(B_win_rate)]
-        draw_rate = [draw_rate[i-1] for i in log_indices if i-1 < len(draw_rate)]
+        A_win_rate = moving_average(A_win_rate, window_size)
+        B_win_rate = moving_average(B_win_rate, window_size)
+        draw_rate = moving_average(draw_rate, window_size)
 
     # --- Plot ---
     plt.figure(figsize=(10, 6))
@@ -44,9 +50,10 @@ def plot_win_rates_from_csv(csv_path, name_A, name_B, save_dir, log_scale=True):
     plt.plot(episodes, B_win_rate, label=f"{name_B} Win Rate", color="red")
     plt.plot(episodes, draw_rate, label="Draw Rate", color="gray", linestyle='--')
 
-    plt.xscale('log' if log_scale else 'linear')
-    plt.xlabel("Episodes (log scale)" if log_scale else "Episodes")
-    plt.ylabel("Win Rate")
+    plt.xscale('linear')
+    plt.xlabel("Episodes", fontsize=14)
+    plt.ylabel("Win Rate", fontsize=14)
+    plt.ylim(0, 1)
     plt.legend()
     plt.grid(True)
     plt.tight_layout()

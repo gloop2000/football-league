@@ -79,7 +79,6 @@ def plot_win_rates(history, name_A, name_B, save_dir, smooth_window=50):
     plt.plot(draws, label="Draw Rate", color="gray", linestyle='--')
     plt.xlabel("Episodes")
     plt.ylabel("Win Rate")
-    plt.title("Win Rate Over Time")
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
