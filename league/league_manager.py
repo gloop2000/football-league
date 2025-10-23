@@ -1,4 +1,9 @@
-import random
+"""
+League Manager for Football Agents
+
+Manages a league of football agents, running matches, tracking ELO ratings, and maintaining a leaderboard.
+
+"""
 import csv
 from collections import defaultdict
 from football.football_env import FootballEnv

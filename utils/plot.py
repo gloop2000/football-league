@@ -1,3 +1,4 @@
+"""Plotting utilities for football training results."""
 import csv
 import os
 import matplotlib.pyplot as plt

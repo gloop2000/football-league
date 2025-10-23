@@ -7,7 +7,7 @@ One ball: only one player has possession at a time
 
 Goal zones: left and right edges of the grid
 
-Discrete actions: ['UP', 'DOWN', 'LEFT', 'RIGHT', 'STAY', 'KICK']
+Discrete actions: ['UP', 'DOWN', 'LEFT', 'RIGHT', 'STAY']
 
 Episode ends when a player scores or max steps reached
 
@@ -16,7 +16,6 @@ Episode ends when a player scores or max steps reached
 import numpy as np
 import matplotlib.pyplot as plt
 import random
-from datetime import datetime
 import os
 
 class FootballEnv:

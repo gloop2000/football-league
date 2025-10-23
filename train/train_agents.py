@@ -1,3 +1,9 @@
+"""
+Training script for football agents in a simulated environment.
+
+Handles training loops, logging, and result plotting.
+
+"""
 import os
 import csv
 from collections import defaultdict
