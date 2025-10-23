@@ -2,9 +2,11 @@ import random
 import csv
 from collections import defaultdict
 from football.football_env import FootballEnv
+import os
+from datetime import datetime
 
 class LeagueManager:
-    def __init__(self, agents, episodes_per_match=100, train_during_league=False, k_elo=32):
+    def __init__(self, agents, episodes_per_match=100, train_during_league=False, k_elo=32, should_render=False):
         self.agents = {agent.name: agent for agent in agents}
         self.episodes_per_match = episodes_per_match
         self.train_during_league = train_during_league
@@ -18,6 +20,10 @@ class LeagueManager:
         agent_2.set_opponent(agent_1.name)
         name_1, name_2 = agent_1.name, agent_2.name
         wins_1 = wins_2 = draws = 0
+        if self.should_render:
+            timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+            savedir = f"./renders/{agent_1.name}_vs_{agent_2.name}_{timestamp_str}"
+            os.makedirs(savedir, exist_ok=True)
 
         for _ in range(self.episodes_per_match):
             obs = env.reset()
@@ -32,7 +38,8 @@ class LeagueManager:
                 if self.train_during_league:
                     agent_1.observe(obs, actions, reward, next_obs, done)
                     agent_2.observe(obs, actions, reward, next_obs, done)
-
+                if self.should_render:
+                    env.render(saveDir=savedir)
                 obs = next_obs
 
             # Determine winner
@@ -104,18 +111,3 @@ class LeagueManager:
             for row in leaderboard:
                 writer.writerow(row)
         print(f"Leaderboard exported to {path}")
-
-    def export_match_results(self, path="match_results.csv"):
-        agents = list(self.agents.keys())
-        with open(path, 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(["Agent A", "Agent B", "Wins A", "Wins B", "Draws"])
-            
-            for i in range(len(agents)):
-                for j in range(i + 1, len(agents)):
-                    a, b = agents[i], agents[j]
-                    wins_a = self.results[a]['wins']
-                    wins_b = self.results[b]['wins']
-                    draws = self.results[a]['draws']  # shared draw count
-                    writer.writerow([a, b, wins_a, wins_b, draws])
-        print(f"Match results exported to {path}")
