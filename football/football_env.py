@@ -14,7 +14,10 @@ Episode ends when a player scores or max steps reached
 '''
 
 import numpy as np
+import matplotlib.pyplot as plt
 import random
+from datetime import datetime
+import os
 
 class FootballEnv:
     def __init__(self, grid_size=5, max_steps=100, agent_names=None):
@@ -82,13 +85,33 @@ class FootballEnv:
 
         return self._get_obs(), reward, done
 
-    def render(self):
-        grid = [['.' for _ in range(self.grid_size)] for _ in range(self.grid_size)]
-        for name, pos in self.agent_positions.items():
-            symbol = name + ('*' if self.ball_owner == name else '')
-            x, y = pos
-            grid[y][x] = symbol
+    def render(self, delay=0.3, saveDir=None):
+        fig, ax = plt.subplots()
+        # === Define grid boundaries ===
+        ax.set_xlim(-0.5, self.grid_size - 0.5)
+        ax.set_ylim(-0.5, self.grid_size - 0.5)
+        ax.set_aspect('equal')  # make cells square
 
-        print("\n".join([" ".join(row) for row in grid]))
-        print(f"Ball: {self.ball_owner}, Steps: {self.steps}")
-        print()
+        ax.set_xticks(np.arange(-.5, self.grid_size, 1))
+        ax.set_yticks(np.arange(-.5, self.grid_size, 1))
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+        ax.grid(linestyle="-", color='black')
+        ax.grid(True)
+
+        for name, pos in self.agent_positions.items():
+            print(name, pos, self.steps)
+            x, y = pos
+            color = 'blue' if name == self.agent_names[0] else 'red'
+            ax.scatter(x, y, s=500, c=color, marker='o', label=name)
+
+        # Ball indicator
+        bx, by = self.agent_positions[self.ball_owner]
+        ax.scatter(bx, by, s=200, c='gold', marker='*', label='Ball')
+        
+
+        ax.legend( loc ='upper right', bbox_to_anchor =(1.35, 1), markerscale=0.5)
+        plt.title(f"Step {self.steps} | Ball: {self.ball_owner}")
+        plt.savefig(os.path.join(saveDir, f"step_{self.steps}.png"))
+        plt.pause(delay)
+        plt.close(fig)
